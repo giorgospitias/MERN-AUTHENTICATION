@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <OpenRoute element={<SignIn />} />,
+        element: <PrivateRoute element={<Homepage />} />,
       },
       {
         path: "/portfolio",

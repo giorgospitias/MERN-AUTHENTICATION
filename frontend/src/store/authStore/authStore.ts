@@ -20,7 +20,7 @@ export const loginUserThunk = createAsyncThunk(
       });
       return {
         user: data,
-        access_token: data.access,
+        access_token: data.token,
         // refresh_token: data.refresh,
       };
     } catch (err) {

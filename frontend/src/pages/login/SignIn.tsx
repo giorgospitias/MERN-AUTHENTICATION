@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { loginUserThunk } from "../../store/authStore/authStore";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useAppDispatch } from "../../store/storeHooks";
+import { ErrorMessage } from "@hookform/error-message";
 import { useNavigate } from "react-router-dom";
 import { msalInstance } from "../../../msalConfig";
 import { AccountInfo } from "@azure/msal-browser";
+import useAuth from "../../hooks/useAuth";
 
 interface SignInProps {
   // Define any props here if necessary
@@ -13,8 +16,18 @@ const SignIn: React.FC<SignInProps> = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const { setUserAccessToken } = useAuth();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<{
+    username: string;
+    password: string;
+  }>();
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -24,9 +37,28 @@ const SignIn: React.FC<SignInProps> = () => {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    dispatch(loginUserThunk({ email, password }));
+  const onSubmit: SubmitHandler<{
+    username: string;
+    password: string;
+  }> = async function (data: { username: string; password: string }) {
+    const { username, password } = data;
+
+    const response: any = await dispatch(
+      loginUserThunk({ email: username, password: password })
+    );
+    console.log(response.payload);
+    if (
+      response.meta.requestStatus === "fulfilled" &&
+      !!response?.payload?.access_token
+    ) {
+      // setTimeout(() => {
+      console.log(response.payload);
+      setUserAccessToken(response.payload.access_token);
+      // }, 3000);
+    }
+    // if (response.meta.requestStatus === "fulfilled" && reset_password) {
+    //   return navigate("/reset-password");
+    // }
   };
 
   const handleMicrosoftSignIn = async () => {
@@ -54,7 +86,10 @@ const SignIn: React.FC<SignInProps> = () => {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Sign in to your account
             </h1>
-            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+            <form
+              className="space-y-4 md:space-y-6"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               <div>
                 <label
                   htmlFor="email"
@@ -63,14 +98,23 @@ const SignIn: React.FC<SignInProps> = () => {
                   Your email
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  id="email"
+                  id="username"
+                  type="text"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="name@company.com"
                   required
-                  value={email}
-                  onChange={handleEmailChange}
+                  {...register("username", {
+                    required: `Email is required.`,
+                  })}
+                />
+                <ErrorMessage
+                  errors={errors}
+                  name="username"
+                  render={({ message }) => (
+                    <p className="text-sm font-semibold text-red-500">
+                      {message}
+                    </p>
+                  )}
                 />
               </div>
               <div>
@@ -81,14 +125,23 @@ const SignIn: React.FC<SignInProps> = () => {
                   Password
                 </label>
                 <input
-                  type="password"
-                  name="password"
                   id="password"
+                  type="password"
                   placeholder="••••••••"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   required
-                  value={password}
-                  onChange={handlePasswordChange}
+                  {...register("password", {
+                    required: `Password is required.`,
+                  })}
+                />
+                <ErrorMessage
+                  errors={errors}
+                  name="password"
+                  render={({ message }) => (
+                    <p className="text-sm font-semibold text-red-500">
+                      {message}
+                    </p>
+                  )}
                 />
               </div>
               <div className="flex items-center justify-between">
