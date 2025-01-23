@@ -19,8 +19,8 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false }));
 
 // Routes
-app.use("/api/v1/portfolio", portfolioRoutes);
-app.use("/api/v1/user", userRoutes);
+app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/user", userRoutes);
 
 //MIDDLEWARES
 app.get("/", async (req, res) => {
