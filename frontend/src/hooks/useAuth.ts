@@ -2,7 +2,7 @@ import { useCookies } from "react-cookie";
 import axios from "axios";
 import { authActions } from "../store/globalStore";
 import { useAppDispatch } from "../store/storeHooks";
-import { autoLoginUserThunk } from "../store/authStore/authStore";
+// import { autoLoginUserThunk } from "../store/authStore/authStore";
 import { useEffect } from "react";
 
 const useAuth = () => {
@@ -28,22 +28,22 @@ const useAuth = () => {
     });
   };
 
-  const autoLoginUser = async () => {
-    if (cookies.refresh_token) {
-      const response: any = await dispatch(
-        autoLoginUserThunk({ refreshToken: cookies.refresh_token })
-      );
-      if (
-        response.meta.requestStatus === "fulfilled" &&
-        !!response.payload?.access_token
-      ) {
-        setUserAccessToken(response.payload.access_token);
-      }
-    }
-  };
+  // const autoLoginUser = async () => {
+  //   if (cookies.refresh_token) {
+  //     const response: any = await dispatch(
+  //       autoLoginUserThunk({ refreshToken: cookies.refresh_token })
+  //     );
+  //     if (
+  //       response.meta.requestStatus === "fulfilled" &&
+  //       !!response.payload?.access_token
+  //     ) {
+  //       setUserAccessToken(response.payload.access_token);
+  //     }
+  //   }
+  // };
 
   const logoutUser = () => {
-    dispatch(authActions.logout);
+    // dispatch(authActions.logout);
 
     axios.interceptors.request.clear();
     removeCookie("access_token");
@@ -56,7 +56,7 @@ const useAuth = () => {
     setUserRefreshToken,
     logoutUser,
     cookies,
-    autoLoginUser,
+    // autoLoginUser,
   };
 };
 

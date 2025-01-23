@@ -6,6 +6,8 @@ import OpenRoute from "./OpenRoute";
 import Homepage from "../pages/Homepage";
 import Portfolio from "../pages/Portfolio";
 import CoinPage from "../pages/CoinPage";
+import SignUp from "../pages/login/SignUp";
+import SignIn from "../pages/login/SignIn";
 // import SignIn from "../pages/login/SignIn";
 // import SignUp from "../pages/login/SignUp";
 
@@ -17,7 +19,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <OpenRoute element={<Homepage />} />,
+        element: <OpenRoute element={<SignIn />} />,
       },
       {
         path: "/portfolio",
@@ -27,14 +29,14 @@ export const router = createBrowserRouter([
         path: "/coins/:coinId",
         element: <PrivateRoute element={<CoinPage />} />,
       },
-      // {
-      //   path: "/signIn",
-      //   element: <OpenRoute element={<SignIn />} />,
-      // },
-      // {
-      //   path: "/signUp",
-      //   element: <OpenRoute element={<SignUp />} />,
-      // },
+      {
+        path: "/signIn",
+        element: <OpenRoute element={<SignIn />} />,
+      },
+      {
+        path: "/signUp",
+        element: <OpenRoute element={<SignUp />} />,
+      },
 
       //   {
       //     path: "*",

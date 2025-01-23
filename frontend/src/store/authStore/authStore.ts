@@ -8,28 +8,48 @@ import {
   UserForgotPasswordData,
   UserRefreshResponseData,
 } from "../../interfaces/User";
+import { BE_URL } from "../../api/urls";
 
 export const loginUserThunk = createAsyncThunk(
   "auth/loginUser",
-  async function ({
-    username,
-    password,
-  }: {
-    username: string;
-    password: string;
-  }) {
+  async function ({ email, password }: { email: string; password: string }) {
     try {
-      const { data } = await axios.post(
-        `http://localhost:8000/api/user/login/`,
-        {
-          username,
-          password,
-        }
-      );
+      const { data } = await axios.post(`${BE_URL}/user/login`, {
+        email,
+        password,
+      });
       return {
         user: data,
         access_token: data.access,
-        refresh_token: data.refresh,
+        // refresh_token: data.refresh,
+      };
+    } catch (err) {
+      toast.error({ err }.toString());
+      throw err;
+    }
+  }
+);
+
+export const signUpUserThunk = createAsyncThunk(
+  "auth/signUpUser",
+  async function ({
+    email,
+    password,
+    passwordConfirm,
+  }: {
+    email: string;
+    password: string;
+    passwordConfirm: string;
+  }) {
+    try {
+      const { data } = await axios.post(`${BE_URL}/user/signup`, {
+        email,
+        password,
+        passwordConfirm,
+      });
+      return {
+        user: data,
+        message: "User successfully registered!",
       };
     } catch (err) {
       toast.error({ err }.toString());
@@ -42,10 +62,7 @@ export const forgotPasswordThunk = createAsyncThunk(
   "auth/forgotPassword",
   async (data: UserForgotPasswordData) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/api/user/forgotPassword/`,
-        data
-      );
+      const response = await axios.post(`${BE_URL}/user/forgotPassword/`, data);
       toast.success(
         "Password successfully reset. Please check your E-mail for your temp pass!"
       );
@@ -61,10 +78,7 @@ export const changePasswordThunk = createAsyncThunk(
   "auth/changePassword",
   async (data: UserChangePasswordData) => {
     try {
-      const response = await axios.post(
-        `http://localhost:8000/api/user/changePassword/`,
-        data
-      );
+      const response = await axios.post(`${BE_URL}/user/changePassword/`, data);
       toast.success("Password updated successfully!");
       return response.data;
     } catch (err: any) {
@@ -74,26 +88,26 @@ export const changePasswordThunk = createAsyncThunk(
   }
 );
 
-export const autoLoginUserThunk = createAsyncThunk(
-  "auth/autoLoginUser",
-  async function ({ refreshToken }: { refreshToken: string }) {
-    try {
-      const { data }: { data: UserRefreshResponseData } = await axios.post(
-        `http://localhost:8000/api/user/refresh/`,
-        {
-          refresh: refreshToken,
-        }
-      );
+// export const autoLoginUserThunk = createAsyncThunk(
+//   "auth/autoLoginUser",
+//   async function ({ refreshToken }: { refreshToken: string }) {
+//     try {
+//       const { data }: { data: UserRefreshResponseData } = await axios.post(
+//         `http://localhost:8000/api/user/refresh/`,
+//         {
+//           refresh: refreshToken,
+//         }
+//       );
 
-      return { access_token: data.access };
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.error ||
-          "Something went wrong. Please try again later."
-      );
-    }
-  }
-);
+//       return { access_token: data.access };
+//     } catch (err: any) {
+//       toast.error(
+//         err.response?.data?.error ||
+//           "Something went wrong. Please try again later."
+//       );
+//     }
+//   }
+// );
 
 const authSlice = createSlice({
   name: "authStore",
@@ -126,7 +140,19 @@ const authSlice = createSlice({
     builder.addCase(loginUserThunk.fulfilled, (state, action) => {
       state.activeUser = action.payload.user;
       state.access_token = action.payload?.access_token ?? null;
-      state.refresh_token = action.payload?.refresh_token ?? null;
+      // state.refresh_token = action.payload?.refresh_token ?? null;
+      state.authLoading = false;
+    });
+    builder.addCase(signUpUserThunk.pending, (state) => {
+      state.authLoading = true;
+    });
+    builder.addCase(signUpUserThunk.rejected, (state) => {
+      state.authLoading = false;
+    });
+    builder.addCase(signUpUserThunk.fulfilled, (state, action) => {
+      state.activeUser = action.payload.user;
+      // state.access_token = action.payload?.user. ?? null;
+      // state.refresh_token = action.payload?.refresh_token ?? null;
       state.authLoading = false;
     });
     builder.addCase(forgotPasswordThunk.pending, (state) => {
@@ -149,21 +175,19 @@ const authSlice = createSlice({
       state.authLoading = false;
       state.reset_password = false;
     });
-    builder.addCase(autoLoginUserThunk.pending, (state) => {
-      state.authLoading = false;
-    });
-    builder.addCase(autoLoginUserThunk.rejected, (state) => {
-      state.authLoading = true;
-    });
-    builder.addCase(autoLoginUserThunk.fulfilled, (state, action) => {
-      state.access_token = action.payload?.access_token ?? null;
-      state.authLoading = false;
-    });
+    // builder.addCase(autoLoginUserThunk.pending, (state) => {
+    //   state.authLoading = false;
+    // });
+    // builder.addCase(autoLoginUserThunk.rejected, (state) => {
+    //   state.authLoading = true;
+    // });
+    // builder.addCase(autoLoginUserThunk.fulfilled, (state, action) => {
+    //   state.access_token = action.payload?.access_token ?? null;
+    //   state.authLoading = false;
+    // });
   },
 });
 
-export const selectUsers = () =>
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useAppSelector((state) => state.auth);
+export const selectUsers = () => useAppSelector((state) => state.auth);
 
 export default authSlice;
